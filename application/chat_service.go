@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/chrikar/chatheon/application/ports"
 	"github.com/chrikar/chatheon/domain"
-	"github.com/chrikar/chatheon/ports"
 )
 
 type ChatService struct {

@@ -3,8 +3,8 @@ package memory
 import (
 	"sync"
 
+	"github.com/chrikar/chatheon/application/ports"
 	"github.com/chrikar/chatheon/domain"
-	"github.com/chrikar/chatheon/ports"
 )
 
 type MessageRepository struct {

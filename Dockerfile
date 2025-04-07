@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o chatheon main.go
+RUN go build -o chatheon cmd/chatheon/main.go
 
 EXPOSE 8080
 

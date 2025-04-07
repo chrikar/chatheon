@@ -6,9 +6,9 @@ import (
 
 	_ "github.com/lib/pq"
 
+	"github.com/chrikar/chatheon/application/ports"
 	"github.com/chrikar/chatheon/domain"
 	"github.com/chrikar/chatheon/internal/config"
-	"github.com/chrikar/chatheon/ports"
 )
 
 type UserRepository struct {
