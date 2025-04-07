@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/chrikar/chatheon/application/ports"
 	"github.com/chrikar/chatheon/domain"
-	"github.com/chrikar/chatheon/ports"
 )
 
 var (
