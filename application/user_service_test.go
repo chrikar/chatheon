@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/chrikar/chatheon/domain"
@@ -34,37 +33,40 @@ func (m *mockUserRepo) FindByUsername(username string) (*domain.User, error) {
 	return user, nil
 }
 
+type mockTokenGenerator struct{}
+
+func (m *mockTokenGenerator) Generate(username, userID string) (string, error) {
+	return "mock-token", nil
+}
+
+// ✅ Test: Happy path registration
 func TestRegisterUser(t *testing.T) {
 	repo := newMockUserRepo()
-	service := NewUserService(repo)
+	service := NewUserService(repo, &mockTokenGenerator{})
 
 	err := service.Register("testuser", "password")
 	assert.NoError(t, err)
 
-	// Try to register the same user again
 	err = service.Register("testuser", "password")
 	assert.ErrorIs(t, err, ErrUsernameTaken)
 }
 
-func TestRegisterUser_EmptyUsername(t *testing.T) {
+// ✅ Test: Empty username and password
+func TestRegisterUser_EmptyFields(t *testing.T) {
 	repo := newMockUserRepo()
-	service := NewUserService(repo)
+	service := NewUserService(repo, &mockTokenGenerator{})
 
 	err := service.Register("", "password")
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrUsernameRequired)
+
+	err = service.Register("username", "")
+	assert.ErrorIs(t, err, ErrPasswordRequired)
 }
 
-func TestRegisterUser_EmptyPassword(t *testing.T) {
-	repo := newMockUserRepo()
-	service := NewUserService(repo)
-
-	err := service.Register("testuser", "")
-	assert.Error(t, err)
-}
-
+// ✅ Test: Password is hashed (not plaintext)
 func TestRegisterUser_PasswordIsHashed(t *testing.T) {
 	repo := newMockUserRepo()
-	service := NewUserService(repo)
+	service := NewUserService(repo, &mockTokenGenerator{})
 
 	username := "secureuser"
 	password := "supersecure"
@@ -76,9 +78,10 @@ func TestRegisterUser_PasswordIsHashed(t *testing.T) {
 	assert.NotEqual(t, password, storedUser.PasswordHash, "Password should be hashed")
 }
 
+// ✅ Test: Register multiple users
 func TestRegisterMultipleUsers(t *testing.T) {
 	repo := newMockUserRepo()
-	service := NewUserService(repo)
+	service := NewUserService(repo, &mockTokenGenerator{})
 
 	users := []struct {
 		username string
@@ -100,24 +103,30 @@ func TestRegisterMultipleUsers(t *testing.T) {
 	}
 }
 
-func TestMockUserRepo_FindByUsername_NotFound(t *testing.T) {
+// ✅ Test: Successful login
+func TestLogin_Success(t *testing.T) {
 	repo := newMockUserRepo()
+	service := NewUserService(repo, &mockTokenGenerator{})
 
-	_, err := repo.FindByUsername("ghost")
-	assert.Error(t, err, "should error for non-existent user")
+	err := service.Register("testuser", "password")
+	assert.NoError(t, err)
+
+	token, err := service.Login("testuser", "password")
+	assert.NoError(t, err)
+	assert.Equal(t, "mock-token", token)
 }
 
-func TestMockUserRepo_Create_Duplicate(t *testing.T) {
+// ✅ Test: Login failures
+func TestLogin_Failure(t *testing.T) {
 	repo := newMockUserRepo()
-	user := &domain.User{
-		ID:           uuid.New(),
-		Username:     "duplicate",
-		PasswordHash: "hashed",
-	}
+	service := NewUserService(repo, &mockTokenGenerator{})
 
-	err := repo.Create(user)
-	assert.NoError(t, err, "first create should succeed")
+	err := service.Register("testuser", "password")
+	assert.NoError(t, err)
 
-	err = repo.Create(user)
-	assert.Error(t, err, "duplicate create should fail")
+	_, err = service.Login("unknown", "password")
+	assert.ErrorIs(t, err, ErrInvalidCredentials)
+
+	_, err = service.Login("testuser", "wrongpassword")
+	assert.ErrorIs(t, err, ErrInvalidCredentials)
 }

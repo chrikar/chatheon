@@ -11,23 +11,31 @@ import (
 )
 
 var (
-	ErrUsernameTaken = errors.New("username is already taken")
+	ErrUsernameTaken      = errors.New("username is already taken")
+	ErrUsernameRequired   = errors.New("username cannot be empty")
+	ErrPasswordRequired   = errors.New("password cannot be empty")
+	ErrInvalidCredentials = errors.New("invalid username or password")
 )
 
-type UserService struct {
-	repo ports.UserRepository
+type TokenGenerator interface {
+	Generate(username, userID string) (string, error)
 }
 
-func NewUserService(r ports.UserRepository) *UserService {
-	return &UserService{repo: r}
+type UserService struct {
+	repo     ports.UserRepository
+	tokenGen TokenGenerator
+}
+
+func NewUserService(r ports.UserRepository, t TokenGenerator) *UserService {
+	return &UserService{repo: r, tokenGen: t}
 }
 
 func (s *UserService) Register(username, password string) error {
 	if username == "" {
-		return errors.New("username cannot be empty")
+		return ErrUsernameRequired
 	}
 	if password == "" {
-		return errors.New("password cannot be empty")
+		return ErrPasswordRequired
 	}
 
 	_, err := s.repo.FindByUsername(username)
@@ -47,4 +55,17 @@ func (s *UserService) Register(username, password string) error {
 	}
 
 	return s.repo.Create(user)
+}
+
+func (s *UserService) Login(username, password string) (string, error) {
+	user, err := s.repo.FindByUsername(username)
+	if err != nil {
+		return "", ErrInvalidCredentials
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return "", ErrInvalidCredentials
+	}
+
+	return s.tokenGen.Generate(user.Username, user.ID.String())
 }
