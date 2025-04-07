@@ -23,6 +23,13 @@ func NewUserService(r ports.UserRepository) *UserService {
 }
 
 func (s *UserService) Register(username, password string) error {
+	if username == "" {
+		return errors.New("username cannot be empty")
+	}
+	if password == "" {
+		return errors.New("password cannot be empty")
+	}
+
 	_, err := s.repo.FindByUsername(username)
 	if err == nil {
 		return ErrUsernameTaken
