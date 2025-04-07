@@ -29,7 +29,11 @@ func NewHandler(service *application.ChatService) http.Handler {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("message sent"))
+		_, err := w.Write([]byte("message sent"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 
 	mux.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +50,11 @@ func NewHandler(service *application.ChatService) http.Handler {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(messages)
+		err = json.NewEncoder(w).Encode(messages)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 
 	return mux
