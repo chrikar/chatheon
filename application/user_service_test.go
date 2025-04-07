@@ -39,32 +39,56 @@ func (m *mockTokenGenerator) Generate(username, userID string) (string, error) {
 	return "mock-token", nil
 }
 
-// ✅ Test: Happy path registration
+// ✅ Table-driven test: Registration
 func TestRegisterUser(t *testing.T) {
+	t.Parallel()
+
 	repo := newMockUserRepo()
 	service := NewUserService(repo, &mockTokenGenerator{})
 
-	err := service.Register("testuser", "password")
-	assert.NoError(t, err)
+	cases := []struct {
+		name     string
+		username string
+		password string
+		wantErr  error
+	}{
+		{"valid user", "testuser", "password", nil},
+		{"duplicate username", "testuser", "password", ErrUsernameTaken},
+		{"empty username", "", "password", ErrUsernameRequired},
+		{"empty password", "testuser2", "", ErrPasswordRequired},
+	}
 
-	err = service.Register("testuser", "password")
-	assert.ErrorIs(t, err, ErrUsernameTaken)
+	// First register to setup duplicate test
+	_ = service.Register("testuser", "password")
+
+	for _, tc := range cases {
+		tc := tc // capture variable
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			// Create a fresh repo & service for each test case
+			repo := newMockUserRepo()
+			service := NewUserService(repo, &mockTokenGenerator{})
+
+			// For "duplicate username" case, pre-register
+			if tc.wantErr == ErrUsernameTaken {
+				_ = service.Register(tc.username, tc.password)
+			}
+
+			err := service.Register(tc.username, tc.password)
+			if tc.wantErr != nil {
+				assert.ErrorIs(t, err, tc.wantErr)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 
-// ✅ Test: Empty username and password
-func TestRegisterUser_EmptyFields(t *testing.T) {
-	repo := newMockUserRepo()
-	service := NewUserService(repo, &mockTokenGenerator{})
-
-	err := service.Register("", "password")
-	assert.ErrorIs(t, err, ErrUsernameRequired)
-
-	err = service.Register("username", "")
-	assert.ErrorIs(t, err, ErrPasswordRequired)
-}
-
-// ✅ Test: Password is hashed (not plaintext)
+// ✅ Test: Password is hashed (explicit check)
 func TestRegisterUser_PasswordIsHashed(t *testing.T) {
+	t.Parallel()
+
 	repo := newMockUserRepo()
 	service := NewUserService(repo, &mockTokenGenerator{})
 
@@ -80,53 +104,71 @@ func TestRegisterUser_PasswordIsHashed(t *testing.T) {
 
 // ✅ Test: Register multiple users
 func TestRegisterMultipleUsers(t *testing.T) {
+	t.Parallel()
+
+	// Each subtest gets its own fresh state
+	t.Run("register and find multiple users", func(t *testing.T) {
+		repo := newMockUserRepo()
+		service := NewUserService(repo, &mockTokenGenerator{})
+
+		users := []struct {
+			username string
+			password string
+		}{
+			{"alice", "password1"},
+			{"bob", "password2"},
+			{"charlie", "password3"},
+		}
+
+		// Register users
+		for _, u := range users {
+			err := service.Register(u.username, u.password)
+			assert.NoError(t, err)
+		}
+
+		// Verify users exist
+		for _, u := range users {
+			_, err := repo.FindByUsername(u.username)
+			assert.NoError(t, err)
+		}
+	})
+}
+
+// ✅ Table-driven test: Login
+func TestLogin(t *testing.T) {
+	t.Parallel()
+
 	repo := newMockUserRepo()
 	service := NewUserService(repo, &mockTokenGenerator{})
 
-	users := []struct {
+	// Pre-register user
+	err := service.Register("testuser", "password")
+	assert.NoError(t, err)
+
+	cases := []struct {
+		name     string
 		username string
 		password string
+		wantErr  error
 	}{
-		{"alice", "password1"},
-		{"bob", "password2"},
-		{"charlie", "password3"},
+		{"successful login", "testuser", "password", nil},
+		{"wrong username", "unknown", "password", ErrInvalidCredentials},
+		{"wrong password", "testuser", "wrongpassword", ErrInvalidCredentials},
 	}
 
-	for _, u := range users {
-		err := service.Register(u.username, u.password)
-		assert.NoError(t, err, "should register user %s", u.username)
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			token, err := service.Login(tc.username, tc.password)
+
+			if tc.wantErr != nil {
+				assert.ErrorIs(t, err, tc.wantErr)
+				assert.Empty(t, token)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, "mock-token", token)
+			}
+		})
 	}
-
-	for _, u := range users {
-		_, err := repo.FindByUsername(u.username)
-		assert.NoError(t, err, "should find user %s", u.username)
-	}
-}
-
-// ✅ Test: Successful login
-func TestLogin_Success(t *testing.T) {
-	repo := newMockUserRepo()
-	service := NewUserService(repo, &mockTokenGenerator{})
-
-	err := service.Register("testuser", "password")
-	assert.NoError(t, err)
-
-	token, err := service.Login("testuser", "password")
-	assert.NoError(t, err)
-	assert.Equal(t, "mock-token", token)
-}
-
-// ✅ Test: Login failures
-func TestLogin_Failure(t *testing.T) {
-	repo := newMockUserRepo()
-	service := NewUserService(repo, &mockTokenGenerator{})
-
-	err := service.Register("testuser", "password")
-	assert.NoError(t, err)
-
-	_, err = service.Login("unknown", "password")
-	assert.ErrorIs(t, err, ErrInvalidCredentials)
-
-	_, err = service.Login("testuser", "wrongpassword")
-	assert.ErrorIs(t, err, ErrInvalidCredentials)
 }

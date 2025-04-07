@@ -8,49 +8,63 @@ import (
 )
 
 func TestJWTManager_GenerateAndVerify(t *testing.T) {
+	t.Parallel()
+
 	manager := NewJWTManager("test-secret", time.Minute)
 
-	// Generate token
 	token, err := manager.Generate("testuser", "user-123")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token)
 
-	// Verify token
 	claims, err := manager.Verify(token)
 	assert.NoError(t, err)
 	assert.Equal(t, "testuser", claims.Username)
 	assert.Equal(t, "user-123", claims.UserID)
 }
 
-func TestJWTManager_Verify_InvalidToken(t *testing.T) {
+func TestJWTManager_Verify_InvalidCases(t *testing.T) {
+	t.Parallel()
+
 	manager := NewJWTManager("test-secret", time.Minute)
 
-	// Provide an invalid token
-	_, err := manager.Verify("invalid.token.here")
-	assert.Error(t, err)
-}
-
-func TestJWTManager_Verify_TamperedToken(t *testing.T) {
-	manager := NewJWTManager("test-secret", time.Minute)
-
-	// Generate token
-	token, err := manager.Generate("testuser", "user-123")
+	// Generate valid token for tampering
+	validToken, err := manager.Generate("testuser", "user-123")
 	assert.NoError(t, err)
 
-	// Tamper token
-	tamperedToken := token + "tamper"
+	// Tampered token
+	tamperedToken := validToken + "tamper"
 
-	_, err = manager.Verify(tamperedToken)
-	assert.Error(t, err)
-}
-
-func TestJWTManager_Verify_ExpiredToken(t *testing.T) {
-	manager := NewJWTManager("test-secret", -time.Minute) // already expired
-
-	// Generate expired token
-	token, err := manager.Generate("testuser", "user-123")
+	// Expired token
+	expiredManager := NewJWTManager("test-secret", -time.Minute) // already expired
+	expiredToken, err := expiredManager.Generate("testuser", "user-123")
 	assert.NoError(t, err)
 
-	_, err = manager.Verify(token)
-	assert.Error(t, err)
+	cases := []struct {
+		name       string
+		token      string
+		expectErr  bool
+	}{
+		{"invalid token format", "invalid.token.here", true},
+		{"tampered token", tamperedToken, true},
+		{"expired token", expiredToken, true},
+		{"valid token", validToken, false},
+	}
+
+	for _, tc := range cases {
+		tc := tc // capture range variable
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			claims, err := manager.Verify(tc.token)
+
+			if tc.expectErr {
+				assert.Error(t, err)
+				assert.Nil(t, claims)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, "testuser", claims.Username)
+				assert.Equal(t, "user-123", claims.UserID)
+			}
+		})
+	}
 }
