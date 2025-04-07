@@ -57,6 +57,11 @@ make docker-up
 make docker-down
 ```
 
+### Run linter
+```bash
+make lint
+```
+
 ## Features
 
 - ✅ Hexagonal architecture (ports & adapters)
