@@ -18,20 +18,20 @@ func NewMessageRepository() ports.MessageRepository {
 	}
 }
 
-func (r *MessageRepository) Save(message *domain.Message) error {
+func (r *MessageRepository) Create(message *domain.Message) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.messages = append(r.messages, message)
 	return nil
 }
 
-func (r *MessageRepository) GetMessagesForUser(userID string) ([]*domain.Message, error) {
+func (r *MessageRepository) GetMessagesBySender(userID string) ([]*domain.Message, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	var userMessages []*domain.Message
 	for _, msg := range r.messages {
-		if msg.ToUser == userID || msg.FromUser == userID {
+		if msg.SenderID == userID {
 			userMessages = append(userMessages, msg)
 		}
 	}

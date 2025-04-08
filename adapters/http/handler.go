@@ -13,7 +13,7 @@ type SendMessageRequest struct {
 	Content  string `json:"content"`
 }
 
-func NewHandler(service *application.ChatService) http.Handler {
+func NewHandler(service *application.MessageService) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/send", func(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func NewHandler(service *application.ChatService) http.Handler {
 			return
 		}
 
-		if err := service.SendMessage(req.FromUser, req.ToUser, req.Content); err != nil {
+		if err := service.CreateMessage(req.FromUser, req.ToUser, req.Content); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -1,11 +1,10 @@
 package domain
 
-import "time"
+import "github.com/google/uuid"
 
 type Message struct {
-	ID        string
-	FromUser  string
-	ToUser    string
-	Content   string
-	Timestamp time.Time
+	ID         uuid.UUID
+	SenderID   string
+	ReceiverID string
+	Content    string
 }

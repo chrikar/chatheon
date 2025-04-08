@@ -6,16 +6,14 @@ import (
 
 	httpAdapter "github.com/chrikar/chatheon/adapters/http"
 	"github.com/chrikar/chatheon/adapters/memory"
-	"github.com/chrikar/chatheon/adapters/notification"
 	"github.com/chrikar/chatheon/application"
 )
 
 func main() {
-	repo := memory.NewMessageRepository()
-	notifier := notification.NewConsoleNotifier()
-	service := application.NewChatService(repo, notifier)
+	messageRepo := memory.NewMessageRepository()
+	messageService := application.NewMessageService(messageRepo)
 
-	httpHandler := httpAdapter.NewHandler(service)
+	httpHandler := httpAdapter.NewHandler(messageService)
 
 	log.Println("Chat server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", httpHandler))
