@@ -9,10 +9,10 @@ import (
 )
 
 type MessageHandler struct {
-	messageService *application.MessageService
+	messageService application.MessageServiceInterface
 }
 
-func NewMessageHandler(messageService *application.MessageService) *MessageHandler {
+func NewMessageHandler(messageService application.MessageServiceInterface) *MessageHandler {
 	return &MessageHandler{messageService: messageService}
 }
 
@@ -54,7 +54,7 @@ func (h *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch messages
-	messages, err := h.messageService.GetMessages(userID)
+	messages, err := h.messageService.GetMessagesByReceiver(userID)
 	if err != nil {
 		http.Error(w, "failed to fetch messages", http.StatusInternalServerError)
 		return

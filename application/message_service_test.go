@@ -36,6 +36,16 @@ func (m *mockMessageRepo) GetMessagesBySender(senderID string) ([]*domain.Messag
 	return result, nil
 }
 
+func (m *mockMessageRepo) GetMessagesByReceiver(receiverID string) ([]*domain.Message, error) {
+	var result []*domain.Message
+	for _, msg := range m.messages {
+		if msg.ReceiverID == receiverID {
+			result = append(result, msg)
+		}
+	}
+	return result, nil
+}
+
 func TestCreateMessage(t *testing.T) {
 	t.Parallel()
 

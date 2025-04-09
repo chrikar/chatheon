@@ -9,6 +9,11 @@ import (
 	"github.com/chrikar/chatheon/domain"
 )
 
+type MessageServiceInterface interface {
+	CreateMessage(senderID, receiverID, content string) error
+	GetMessagesByReceiver(receiverID string) ([]*domain.Message, error)
+}
+
 var (
 	ErrMessageContentRequired = errors.New("message content cannot be empty")
 )
@@ -38,4 +43,8 @@ func (s *MessageService) CreateMessage(senderID, receiverID, content string) err
 
 func (s *MessageService) GetMessages(senderID string) ([]*domain.Message, error) {
 	return s.repo.GetMessagesBySender(senderID)
+}
+
+func (s *MessageService) GetMessagesByReceiver(receiverID string) ([]*domain.Message, error) {
+	return s.repo.GetMessagesByReceiver(receiverID)
 }

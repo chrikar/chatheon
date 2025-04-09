@@ -37,3 +37,16 @@ func (r *MessageRepository) GetMessagesBySender(senderID string) ([]*domain.Mess
 	}
 	return result, nil
 }
+
+func (r *MessageRepository) GetMessagesByReceiver(receiverID string) ([]*domain.Message, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []*domain.Message
+	for _, msg := range r.messages {
+		if msg.ReceiverID == receiverID {
+			result = append(result, msg)
+		}
+	}
+	return result, nil
+}
