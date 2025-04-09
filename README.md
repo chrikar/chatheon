@@ -81,6 +81,61 @@ make lint
 - 🧩 Extend to conversations and channels
 - 🧩 Improve CI with coverage thresholds
 
+## Testing
+### curl commands
+
+#### Register a new user
+```bash
+curl -X POST http://localhost:8080/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"user1","password":"password"}'
+```
+
+#### Login to get JWT token
+```bash
+curl -X POST http://localhost:8080/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"user1","password":"password"}'
+```
+
+Response:
+```json
+{
+  "token": "your-jwt-token-here"
+}
+```
+
+#### Send a message (use the preiously obtained JWT token)
+```bash
+curl -X POST http://localhost:8080/messages \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-jwt-token-here" \
+  -d '{"receiver_id":"user2","content":"Hello, user2!"}'
+```
+
+Expected result:
+```bash
+HTTP/1.1 201 Created
+```
+
+#### Get messages
+```bash
+curl -X GET http://localhost:8080/messages \
+  -H "Authorization: Bearer your-jwt-token-here"
+```
+
+Response:
+```json
+[
+  {
+    "ID": "some-uuid",
+    "SenderID": "user1",
+    "ReceiverID": "user2",
+    "Content": "Hello, user2!"
+  }
+]
+```
+
 ## Contributing
 
 Pull requests are welcome! Please open an issue first to discuss changes.
