@@ -5,6 +5,28 @@
 
 A modern, Go-powered chat application built with Hexagonal architecture and full test coverage.
 
+## Table of Contents
+- [Chatheon](#chatheon)
+  - [Table of Contents](#table-of-contents)
+  - [Project Structure](#project-structure)
+  - [How to Run](#how-to-run)
+    - [Run unit tests](#run-unit-tests)
+    - [Check test coverage](#check-test-coverage)
+    - [Build and run locally](#build-and-run-locally)
+    - [Run with Docker](#run-with-docker)
+    - [Stop Docker services](#stop-docker-services)
+    - [Run linter](#run-linter)
+  - [Features](#features)
+  - [Roadmap](#roadmap)
+  - [Testing](#testing)
+    - [curl commands](#curl-commands)
+      - [Register a new user](#register-a-new-user)
+      - [Login to get JWT token](#login-to-get-jwt-token)
+      - [Send a message (use the preiously obtained JWT token)](#send-a-message-use-the-preiously-obtained-jwt-token)
+      - [Get messages](#get-messages)
+  - [Contributing](#contributing)
+  - [License](#license)
+
 ## Project Structure
 
 ```bash
