@@ -21,6 +21,11 @@ type TokenGenerator interface {
 	Generate(username, userID string) (string, error)
 }
 
+type UserServiceInterface interface {
+	Register(username, password string) error
+	Login(username, password string) (string, error)
+}
+
 type UserService struct {
 	repo     ports.UserRepository
 	tokenGen TokenGenerator
