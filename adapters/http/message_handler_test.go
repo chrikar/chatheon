@@ -14,37 +14,15 @@ import (
 	"github.com/chrikar/chatheon/internal/auth"
 )
 
-// Mock service for testing
-type mockMessageService struct {
-	messages []*domain.Message
-}
-
-func (m *mockMessageService) CreateMessage(senderID, receiverID, content string) error {
-	m.messages = append(m.messages, &domain.Message{
-		SenderID:   senderID,
-		ReceiverID: receiverID,
-		Content:    content,
-	})
-	return nil
-}
-
-func (m *mockMessageService) GetMessagesByReceiver(receiverID string) ([]*domain.Message, error) {
-	var result []*domain.Message
-	for _, msg := range m.messages {
-		if msg.ReceiverID == receiverID {
-			result = append(result, msg)
-		}
-	}
-	return result, nil
-}
-
 // Test helper for context injection
 func contextWithUserID(ctx context.Context, userID string) context.Context {
 	return context.WithValue(ctx, auth.ContextUserIDKey, userID)
 }
 
 func TestMessageHandler_CreateMessage(t *testing.T) {
-	service := &mockMessageService{}
+	service := new(mockMessageService)
+	service.On("CreateMessage", "user-1", "user-2", "Hello!").Return(nil)
+
 	handler := NewMessageHandler(service)
 
 	reqBody := createMessageRequest{
@@ -61,20 +39,18 @@ func TestMessageHandler_CreateMessage(t *testing.T) {
 	handler.CreateMessage(rr, req)
 
 	assert.Equal(t, http.StatusCreated, rr.Code)
-	assert.Len(t, service.messages, 1)
-	assert.Equal(t, "user-1", service.messages[0].SenderID)
-	assert.Equal(t, "user-2", service.messages[0].ReceiverID)
-	assert.Equal(t, "Hello!", service.messages[0].Content)
+
+	service.AssertExpectations(t)
 }
 
 func TestMessageHandler_GetMessages(t *testing.T) {
-	service := &mockMessageService{
-		messages: []*domain.Message{
-			{SenderID: "user-2", ReceiverID: "user-1", Content: "Hi user1!"},
-			{SenderID: "user-3", ReceiverID: "user-1", Content: "Hello user1!"},
-			{SenderID: "user-1", ReceiverID: "user-3", Content: "Hi user3!"},
-		},
+	service := new(mockMessageService)
+	expectedMessages := []*domain.Message{
+		{SenderID: "user-2", ReceiverID: "user-1", Content: "Hi user1!"},
+		{SenderID: "user-3", ReceiverID: "user-1", Content: "Hello user1!"},
 	}
+	service.On("GetMessagesByReceiver", "user-1").Return(expectedMessages, nil)
+
 	handler := NewMessageHandler(service)
 
 	req := httptest.NewRequest(http.MethodGet, "/messages", nil)
@@ -92,4 +68,6 @@ func TestMessageHandler_GetMessages(t *testing.T) {
 	assert.Len(t, response, 2)
 	assert.Equal(t, "Hi user1!", response[0].Content)
 	assert.Equal(t, "Hello user1!", response[1].Content)
+
+	service.AssertExpectations(t)
 }
