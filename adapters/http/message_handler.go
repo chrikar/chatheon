@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/chrikar/chatheon/application"
+	"github.com/chrikar/chatheon/application/ports"
 	"github.com/chrikar/chatheon/internal/auth"
 )
 
 type MessageHandler struct {
-	messageService application.MessageServiceInterface
+	messageService ports.MessageService
 }
 
-func NewMessageHandler(messageService application.MessageServiceInterface) *MessageHandler {
+func NewMessageHandler(messageService ports.MessageService) *MessageHandler {
 	return &MessageHandler{messageService: messageService}
 }
 

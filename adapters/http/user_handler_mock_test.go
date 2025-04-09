@@ -1,12 +1,15 @@
 package http
 
 import (
+	"github.com/chrikar/chatheon/application/ports"
 	"github.com/stretchr/testify/mock"
 )
 
 type mockUserService struct {
 	mock.Mock
 }
+
+var _ ports.UserService = (*mockUserService)(nil) // Optional compile-time check
 
 func (m *mockUserService) Register(username, password string) error {
 	args := m.Called(username, password)

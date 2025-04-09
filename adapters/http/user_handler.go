@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/chrikar/chatheon/application"
+	"github.com/chrikar/chatheon/application/ports"
 )
 
 type UserHandler struct {
-	userService application.UserServiceInterface
+	userService ports.UserService
 }
 
-func NewUserHandler(userService application.UserServiceInterface) *UserHandler {
+func NewUserHandler(userService ports.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 

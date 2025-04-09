@@ -3,12 +3,15 @@ package http
 import (
 	"github.com/stretchr/testify/mock"
 
+	"github.com/chrikar/chatheon/application/ports"
 	"github.com/chrikar/chatheon/domain"
 )
 
 type mockMessageService struct {
 	mock.Mock
 }
+
+var _ ports.MessageService = (*mockMessageService)(nil) // Optional compile-time check
 
 func (m *mockMessageService) CreateMessage(senderID, receiverID, content string) error {
 	args := m.Called(senderID, receiverID, content)
