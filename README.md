@@ -16,6 +16,7 @@ A modern, Go-powered chat application built with Hexagonal architecture and full
     - [Run with Docker](#run-with-docker)
     - [Stop Docker services](#stop-docker-services)
     - [Run linter](#run-linter)
+  - [Pre-commit hook setup](#pre-commit-hook-setup)
   - [Features](#features)
   - [Roadmap](#roadmap)
   - [Testing](#testing)
@@ -82,6 +83,13 @@ make docker-down
 ### Run linter
 ```bash
 make lint
+```
+
+## Pre-commit hook setup
+To set up pre-commit hooks for linting and formatting, run the following command:
+
+```bash
+pre-commit install
 ```
 
 ## Features
