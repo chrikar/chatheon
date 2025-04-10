@@ -27,3 +27,6 @@ docker-down:
 
 lint:
 	golangci-lint run --timeout 5m
+
+format:
+	goimports -w .
