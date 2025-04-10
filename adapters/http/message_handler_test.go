@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/chrikar/chatheon/adapters/mocks"
 	"github.com/chrikar/chatheon/domain"
 	"github.com/chrikar/chatheon/internal/auth"
 )
@@ -20,7 +21,7 @@ func contextWithUserID(ctx context.Context, userID string) context.Context {
 }
 
 func TestMessageHandler_CreateMessage(t *testing.T) {
-	service := new(mockMessageService)
+	service := new(mocks.MessageService)
 	service.On("CreateMessage", "user-1", "user-2", "Hello!").Return(nil)
 
 	handler := NewMessageHandler(service)
@@ -44,7 +45,7 @@ func TestMessageHandler_CreateMessage(t *testing.T) {
 }
 
 func TestMessageHandler_GetMessages(t *testing.T) {
-	service := new(mockMessageService)
+	service := new(mocks.MessageService)
 	expectedMessages := []*domain.Message{
 		{SenderID: "user-2", ReceiverID: "user-1", Content: "Hi user1!"},
 		{SenderID: "user-3", ReceiverID: "user-1", Content: "Hello user1!"},

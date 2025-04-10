@@ -6,6 +6,9 @@ APP_NAME=chatheon
 build:
 	$(GO_CMD) build -o bin/$(APP_NAME) ./cmd/$(APP_NAME)
 
+mocks:
+	$(GO_CMD) generate ./...
+
 run: build
 	./bin/$(APP_NAME)
 

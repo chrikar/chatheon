@@ -9,11 +9,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/chrikar/chatheon/adapters/mocks"
 	"github.com/chrikar/chatheon/application"
 )
 
 func TestUserHandler_RegisterUser(t *testing.T) {
-	service := new(mockUserService)
+	service := new(mocks.UserService)
 	handler := NewUserHandler(service)
 
 	tests := []struct {
@@ -58,7 +59,7 @@ func TestUserHandler_RegisterUser(t *testing.T) {
 }
 
 func TestUserHandler_LoginUser(t *testing.T) {
-	service := new(mockUserService)
+	service := new(mocks.UserService)
 	handler := NewUserHandler(service)
 
 	tests := []struct {
