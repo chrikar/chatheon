@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -47,10 +48,10 @@ func TestMessageHandler_CreateMessage(t *testing.T) {
 func TestMessageHandler_GetMessages(t *testing.T) {
 	service := new(mocks.MessageService)
 	expectedMessages := []*domain.Message{
-		{SenderID: "user-2", ReceiverID: "user-1", Content: "Hi user1!"},
-		{SenderID: "user-3", ReceiverID: "user-1", Content: "Hello user1!"},
+		{SenderID: "user-2", ReceiverID: "user-1", Content: "Hi user1!", CreatedAt: time.Now()},
+		{SenderID: "user-3", ReceiverID: "user-1", Content: "Hello user1!", CreatedAt: time.Now()},
 	}
-	service.On("GetMessagesByReceiver", "user-1").Return(expectedMessages, nil)
+	service.On("GetMessagesByReceiver", "user-1", 10, 0).Return(expectedMessages, nil)
 
 	handler := NewMessageHandler(service)
 
@@ -69,6 +70,8 @@ func TestMessageHandler_GetMessages(t *testing.T) {
 	assert.Len(t, response, 2)
 	assert.Equal(t, "Hi user1!", response[0].Content)
 	assert.Equal(t, "Hello user1!", response[1].Content)
+	assert.NotEmpty(t, response[0].CreatedAt)
+	assert.NotEmpty(t, response[1].CreatedAt)
 
 	service.AssertExpectations(t)
 }

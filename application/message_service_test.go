@@ -36,7 +36,7 @@ func (m *mockMessageRepo) GetMessagesBySender(senderID string) ([]*domain.Messag
 	return result, nil
 }
 
-func (m *mockMessageRepo) GetMessagesByReceiver(receiverID string) ([]*domain.Message, error) {
+func (m *mockMessageRepo) GetMessagesByReceiver(receiverID string, limit, offset int) ([]*domain.Message, error) {
 	var result []*domain.Message
 	for _, msg := range m.messages {
 		if msg.ReceiverID == receiverID {

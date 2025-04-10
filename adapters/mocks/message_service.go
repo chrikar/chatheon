@@ -30,9 +30,9 @@ func (_m *MessageService) CreateMessage(senderID string, receiverID string, cont
 	return r0
 }
 
-// GetMessagesByReceiver provides a mock function with given fields: receiverID
-func (_m *MessageService) GetMessagesByReceiver(receiverID string) ([]*domain.Message, error) {
-	ret := _m.Called(receiverID)
+// GetMessagesByReceiver provides a mock function with given fields: receiverID, limit, offset
+func (_m *MessageService) GetMessagesByReceiver(receiverID string, limit int, offset int) ([]*domain.Message, error) {
+	ret := _m.Called(receiverID, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetMessagesByReceiver")
@@ -40,19 +40,19 @@ func (_m *MessageService) GetMessagesByReceiver(receiverID string) ([]*domain.Me
 
 	var r0 []*domain.Message
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]*domain.Message, error)); ok {
-		return rf(receiverID)
+	if rf, ok := ret.Get(0).(func(string, int, int) ([]*domain.Message, error)); ok {
+		return rf(receiverID, limit, offset)
 	}
-	if rf, ok := ret.Get(0).(func(string) []*domain.Message); ok {
-		r0 = rf(receiverID)
+	if rf, ok := ret.Get(0).(func(string, int, int) []*domain.Message); ok {
+		r0 = rf(receiverID, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*domain.Message)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(receiverID)
+	if rf, ok := ret.Get(1).(func(string, int, int) error); ok {
+		r1 = rf(receiverID, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/chrikar/chatheon/application/ports"
 	"github.com/chrikar/chatheon/internal/auth"
@@ -46,6 +47,21 @@ func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
+	limit := 10 // default limit
+	offset := 0 // default offset
+
+	if l := r.URL.Query().Get("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil {
+			limit = parsed
+		}
+	}
+
+	if o := r.URL.Query().Get("offset"); o != "" {
+		if parsed, err := strconv.Atoi(o); err == nil {
+			offset = parsed
+		}
+	}
+
 	// Get user ID from context
 	userID, ok := r.Context().Value(auth.ContextUserIDKey).(string)
 	if !ok || userID == "" {
@@ -54,7 +70,7 @@ func (h *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch messages
-	messages, err := h.messageService.GetMessagesByReceiver(userID)
+	messages, err := h.messageService.GetMessagesByReceiver(userID, limit, offset)
 	if err != nil {
 		http.Error(w, "failed to fetch messages", http.StatusInternalServerError)
 		return

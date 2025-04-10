@@ -2,6 +2,7 @@ package application
 
 import (
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -36,6 +37,7 @@ func (s *MessageService) CreateMessage(senderID, receiverID, content string) err
 		SenderID:   senderID,
 		ReceiverID: receiverID,
 		Content:    content,
+		CreatedAt:  time.Now(),
 	}
 
 	return s.repo.Create(message)
@@ -45,6 +47,6 @@ func (s *MessageService) GetMessages(senderID string) ([]*domain.Message, error)
 	return s.repo.GetMessagesBySender(senderID)
 }
 
-func (s *MessageService) GetMessagesByReceiver(receiverID string) ([]*domain.Message, error) {
-	return s.repo.GetMessagesByReceiver(receiverID)
+func (s *MessageService) GetMessagesByReceiver(receiverID string, limit, offset int) ([]*domain.Message, error) {
+	return s.repo.GetMessagesByReceiver(receiverID, limit, offset)
 }

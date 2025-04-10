@@ -71,15 +71,15 @@ func TestMessageRepository_GetMessagesByReceiver(t *testing.T) {
 	err = repo.Create(&domain.Message{ID: uuid.New(), SenderID: "user-1", ReceiverID: "user-3", Content: "Hi user3!"})
 	assert.NoError(t, err)
 
-	messages, err := repo.GetMessagesByReceiver("user-2")
+	messages, err := repo.GetMessagesByReceiver("user-2", 10, 0)
 	assert.NoError(t, err)
 	assert.Len(t, messages, 2)
 
-	messages, err = repo.GetMessagesByReceiver("user-3")
+	messages, err = repo.GetMessagesByReceiver("user-3", 10, 0)
 	assert.NoError(t, err)
 	assert.Len(t, messages, 1)
 
-	messages, err = repo.GetMessagesByReceiver("user-unknown")
+	messages, err = repo.GetMessagesByReceiver("user-unknown", 10, 0)
 	assert.NoError(t, err)
 	assert.Len(t, messages, 0)
 }

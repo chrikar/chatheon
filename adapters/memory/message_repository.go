@@ -38,7 +38,7 @@ func (r *MessageRepository) GetMessagesBySender(senderID string) ([]*domain.Mess
 	return result, nil
 }
 
-func (r *MessageRepository) GetMessagesByReceiver(receiverID string) ([]*domain.Message, error) {
+func (r *MessageRepository) GetMessagesByReceiver(receiverID string, limit, offset int) ([]*domain.Message, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -48,5 +48,16 @@ func (r *MessageRepository) GetMessagesByReceiver(receiverID string) ([]*domain.
 			result = append(result, msg)
 		}
 	}
-	return result, nil
+
+	// Apply pagination
+	start := offset
+	if start > len(result) {
+		start = len(result)
+	}
+	end := start + limit
+	if end > len(result) {
+		end = len(result)
+	}
+
+	return result[start:end], nil
 }
