@@ -16,6 +16,9 @@ coverage:
 	$(GO_CMD) test -race -coverprofile=coverage.out ./...
 	$(GO_CMD) tool cover -html=coverage.out
 
+docker-build:
+	docker build -t $(APP_NAME) .
+
 docker-up:
 	docker-compose up --build
 

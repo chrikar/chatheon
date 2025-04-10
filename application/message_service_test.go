@@ -72,7 +72,7 @@ func TestGetMessages(t *testing.T) {
 	// Pre-fill messages
 	err := service.CreateMessage("user-1", "user-2", "Hello!")
 	assert.NoError(t, err)
-    err = service.CreateMessage("user-2", "user-1", "Hi!")
+	err = service.CreateMessage("user-2", "user-1", "Hi!")
 	assert.NoError(t, err)
 	err = service.CreateMessage("user-1", "user-2", "How are you?")
 	assert.NoError(t, err)

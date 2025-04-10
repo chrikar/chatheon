@@ -46,11 +46,11 @@ func TestRegisterUser(t *testing.T) {
 	t.Parallel()
 
 	cases := []struct {
-		name       string
+		name        string
 		preRegister bool
-		username   string
-		password   string
-		wantErr    error
+		username    string
+		password    string
+		wantErr     error
 	}{
 		{"valid user", false, "testuser", "password", nil},
 		{"duplicate username", true, "testuser", "password", ErrUsernameTaken},
@@ -133,13 +133,13 @@ func TestLogin(t *testing.T) {
 	t.Parallel()
 
 	cases := []struct {
-		name       string
-		username   string
-		password   string
+		name        string
+		username    string
+		password    string
 		preRegister bool
-		loginUser  string
-		loginPass  string
-		wantErr    error
+		loginUser   string
+		loginPass   string
+		wantErr     error
 	}{
 		{"successful login", "testuser", "password", true, "testuser", "password", nil},
 		{"wrong username", "testuser", "password", true, "unknown", "password", ErrInvalidCredentials},

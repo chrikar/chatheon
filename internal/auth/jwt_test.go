@@ -40,9 +40,9 @@ func TestJWTManager_Verify_InvalidCases(t *testing.T) {
 	assert.NoError(t, err)
 
 	cases := []struct {
-		name       string
-		token      string
-		expectErr  bool
+		name      string
+		token     string
+		expectErr bool
 	}{
 		{"invalid token format", "invalid.token.here", true},
 		{"tampered token", tamperedToken, true},

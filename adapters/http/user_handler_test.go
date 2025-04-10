@@ -7,8 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/chrikar/chatheon/application"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/chrikar/chatheon/application"
 )
 
 func TestUserHandler_RegisterUser(t *testing.T) {
@@ -61,11 +62,11 @@ func TestUserHandler_LoginUser(t *testing.T) {
 	handler := NewUserHandler(service)
 
 	tests := []struct {
-		name          string
-		payload       loginRequest
-		mockSetup     func()
-		expectedCode  int
-		expectToken   bool
+		name         string
+		payload      loginRequest
+		mockSetup    func()
+		expectedCode int
+		expectToken  bool
 	}{
 		{
 			name:    "valid",
