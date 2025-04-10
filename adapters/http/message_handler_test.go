@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/chrikar/chatheon/adapters/mocks"
@@ -73,5 +74,49 @@ func TestMessageHandler_GetMessages(t *testing.T) {
 	assert.NotEmpty(t, response[0].CreatedAt)
 	assert.NotEmpty(t, response[1].CreatedAt)
 
+	for _, msg := range response {
+		_, err := uuid.Parse(msg.ID.String())
+		assert.NoError(t, err, "ID should be valid UUID")
+	}
+
 	service.AssertExpectations(t)
+}
+
+func TestMessageHandler_GetMessages_Pagination(t *testing.T) {
+	service := new(mocks.MessageService)
+	expectedMessages := []*domain.Message{
+		{ID: uuid.New(), SenderID: "sender-1", ReceiverID: "user-1", Content: "Hi 1", CreatedAt: time.Now()},
+		{ID: uuid.New(), SenderID: "sender-2", ReceiverID: "user-1", Content: "Hi 2", CreatedAt: time.Now()},
+	}
+	service.On("GetMessagesByReceiver", "user-1", 2, 0).Return(expectedMessages, nil)
+
+	handler := NewMessageHandler(service)
+
+	req := httptest.NewRequest(http.MethodGet, "/messages?limit=2&offset=0", nil)
+	req = req.WithContext(contextWithUserID(req.Context(), "user-1"))
+	rr := httptest.NewRecorder()
+
+	handler.GetMessages(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	var response []domain.Message
+	err := json.NewDecoder(rr.Body).Decode(&response)
+	assert.NoError(t, err)
+	assert.Len(t, response, 2)
+
+	service.AssertExpectations(t)
+}
+
+func TestMessageHandler_GetMessages_InvalidPagination(t *testing.T) {
+	service := new(mocks.MessageService)
+	handler := NewMessageHandler(service)
+
+	req := httptest.NewRequest(http.MethodGet, "/messages?limit=abc&offset=-1", nil)
+	req = req.WithContext(contextWithUserID(req.Context(), "user-1"))
+	rr := httptest.NewRecorder()
+
+	handler.GetMessages(rr, req)
+
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }

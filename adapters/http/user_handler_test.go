@@ -113,3 +113,24 @@ func TestUserHandler_LoginUser(t *testing.T) {
 		})
 	}
 }
+
+func TestUserHandler_RegisterUser_EmptyFields(t *testing.T) {
+	service := new(mocks.UserService)
+	handler := NewUserHandler(service)
+
+	tests := []registerRequest{
+		{"", "password"},
+		{"username", ""},
+		{"", ""},
+	}
+
+	for _, reqBody := range tests {
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
+		rr := httptest.NewRecorder()
+
+		handler.RegisterUser(rr, req)
+
+		assert.Equal(t, http.StatusBadRequest, rr.Code)
+	}
+}

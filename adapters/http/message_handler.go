@@ -47,19 +47,24 @@ func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
-	limit := 10 // default limit
-	offset := 0 // default offset
-
+	limit := 10 // default
 	if l := r.URL.Query().Get("limit"); l != "" {
-		if parsed, err := strconv.Atoi(l); err == nil {
-			limit = parsed
+		parsed, err := strconv.Atoi(l)
+		if err != nil || parsed <= 0 {
+			http.Error(w, "invalid 'limit' parameter: must be positive integer", http.StatusBadRequest)
+			return
 		}
+		limit = parsed
 	}
 
+	offset := 0 // default
 	if o := r.URL.Query().Get("offset"); o != "" {
-		if parsed, err := strconv.Atoi(o); err == nil {
-			offset = parsed
+		parsed, err := strconv.Atoi(o)
+		if err != nil || parsed < 0 {
+			http.Error(w, "invalid 'offset' parameter: must be non-negative integer", http.StatusBadRequest)
+			return
 		}
+		offset = parsed
 	}
 
 	// Get user ID from context

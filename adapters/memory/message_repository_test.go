@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -82,4 +83,33 @@ func TestMessageRepository_GetMessagesByReceiver(t *testing.T) {
 	messages, err = repo.GetMessagesByReceiver("user-unknown", 10, 0)
 	assert.NoError(t, err)
 	assert.Len(t, messages, 0)
+}
+
+func TestMessageRepository_Pagination(t *testing.T) {
+	repo := NewMessageRepository()
+
+	receiverID := "receiver-1"
+	for i := 0; i < 10; i++ {
+		_ = repo.Create(&domain.Message{
+			ID:         uuid.New(),
+			SenderID:   fmt.Sprintf("sender-%d", i),
+			ReceiverID: receiverID,
+			Content:    fmt.Sprintf("Message %d", i),
+		})
+	}
+
+	tests := []struct {
+		limit, offset int
+		expectedCount int
+	}{
+		{limit: 5, offset: 0, expectedCount: 5},
+		{limit: 3, offset: 7, expectedCount: 3},
+		{limit: 5, offset: 10, expectedCount: 0},
+	}
+
+	for _, tc := range tests {
+		messages, err := repo.GetMessagesByReceiver(receiverID, tc.limit, tc.offset)
+		assert.NoError(t, err)
+		assert.Len(t, messages, tc.expectedCount)
+	}
 }
