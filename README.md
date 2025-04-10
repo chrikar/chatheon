@@ -27,6 +27,7 @@ A modern, Go-powered chat application built with Hexagonal architecture and full
       - [Login to get JWT token](#login-to-get-jwt-token)
       - [Send a message (use the preiously obtained JWT token)](#send-a-message-use-the-preiously-obtained-jwt-token)
       - [Get messages](#get-messages)
+      - [Get messages with pagination](#get-messages-with-pagination)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -170,6 +171,11 @@ HTTP/1.1 201 Created
 ```bash
 curl -X GET http://localhost:8080/messages \
   -H "Authorization: Bearer your-jwt-token-here"
+```
+
+#### Get messages with pagination
+```bash
+curl -X GET "http://localhost:8080/messages?limit=5&offset=0" -H "Authorization: Bearer your-token"
 ```
 
 Response:
