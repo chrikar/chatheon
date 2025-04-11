@@ -39,12 +39,15 @@ jobs:
     - name: Golangci-lint
       uses: golangci/golangci-lint-action@v7.0.0
 
-    - name: Run tests and collect coverage
-      run: go test -v -coverprofile=coverage.out ./...
+    - name: Run tests with coverage
+      run: |
+        go test -race -coverprofile=coverage.out ./...
+        grep -v "adapters/mocks" coverage.out > coverage.cleaned.out
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
       with:
+        files: coverage.cleaned.out
         token: ${{ secrets.CODECOV_TOKEN }}
         name: coverage-report
         exclude: "adapters/mocks/.*"
