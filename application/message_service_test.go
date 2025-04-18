@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/chrikar/chatheon/domain"
@@ -44,6 +45,16 @@ func (m *mockMessageRepo) GetMessagesByReceiver(receiverID string, limit, offset
 		}
 	}
 	return result, nil
+}
+
+func (m *mockMessageRepo) SetMessageStatus(messageID uuid.UUID, status domain.MessageStatus) error {
+	for _, msg := range m.messages {
+		if msg.ID == messageID {
+			msg.Status = status
+			return nil
+		}
+	}
+	return errors.New("message not found")
 }
 
 func TestCreateMessage(t *testing.T) {
@@ -88,4 +99,18 @@ func TestGetMessages(t *testing.T) {
 	messages, err = service.GetMessages("nonexistent")
 	assert.NoError(t, err)
 	assert.Len(t, messages, 0)
+}
+
+func TestSetMessageStatus(t *testing.T) {
+    repo := newMockMessageRepo() // your in-memory repo
+    svc := NewMessageService(repo)
+    // create a message
+    msg := &domain.Message{ID: uuid.New(), SenderID:"u1",ReceiverID:"u2",Content:"hi"}
+    repo.Create(msg)
+    // update
+    err := svc.SetMessageStatus(msg.ID.String(), domain.StatusRead)
+    assert.NoError(t, err)
+    // verify in repo
+    stored, _ := repo.GetMessagesByReceiver("u2",10,0)
+    assert.Equal(t, domain.StatusRead, stored[0].Status)
 }

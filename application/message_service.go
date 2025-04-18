@@ -2,6 +2,7 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,7 @@ import (
 type MessageServiceInterface interface {
 	CreateMessage(senderID, receiverID, content string) error
 	GetMessagesByReceiver(receiverID string) ([]*domain.Message, error)
+	SetMessageStatus(messageID string, status domain.MessageStatus) error
 }
 
 var (
@@ -50,3 +52,13 @@ func (s *MessageService) GetMessages(senderID string) ([]*domain.Message, error)
 func (s *MessageService) GetMessagesByReceiver(receiverID string, limit, offset int) ([]*domain.Message, error) {
 	return s.repo.GetMessagesByReceiver(receiverID, limit, offset)
 }
+
+func (s *MessageService) SetMessageStatus(messageID string, status domain.MessageStatus) error {
+	id, err := uuid.Parse(messageID)
+	if err != nil {
+		return fmt.Errorf("invalid message ID: %w", err)
+	}
+	return s.repo.SetMessageStatus(id, status)
+}
+
+var _ ports.MessageService = (*MessageService)(nil)

@@ -1,7 +1,10 @@
 package memory
 
 import (
+	"fmt"
 	"sync"
+
+	"github.com/google/uuid"
 
 	"github.com/chrikar/chatheon/domain"
 )
@@ -60,4 +63,16 @@ func (r *MessageRepository) GetMessagesByReceiver(receiverID string, limit, offs
 	}
 
 	return result[start:end], nil
+}
+
+func (r *MessageRepository) SetMessageStatus(id uuid.UUID, status domain.MessageStatus) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, msg := range r.messages {
+		if msg.ID == id {
+			msg.Status = status
+			return nil
+		}
+	}
+	return fmt.Errorf("message not found")
 }

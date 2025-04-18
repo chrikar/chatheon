@@ -60,6 +60,24 @@ func (_m *MessageService) GetMessagesByReceiver(receiverID string, limit int, of
 	return r0, r1
 }
 
+// SetMessageStatus provides a mock function with given fields: messageID, status
+func (_m *MessageService) SetMessageStatus(messageID string, status domain.MessageStatus) error {
+	ret := _m.Called(messageID, status)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetMessageStatus")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, domain.MessageStatus) error); ok {
+		r0 = rf(messageID, status)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewMessageService creates a new instance of MessageService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMessageService(t interface {

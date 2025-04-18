@@ -39,6 +39,7 @@ func main() {
 
 	secured.HandleFunc("/messages", messageHandler.CreateMessage).Methods(http.MethodPost)
 	secured.HandleFunc("/messages", messageHandler.GetMessages).Methods(http.MethodGet)
+	secured.HandleFunc("/messages/{id}/status", messageHandler.UpdateStatus).Methods(http.MethodPut)
 
 	log.Println("Chat server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
