@@ -56,7 +56,11 @@ func (h *ConversationHandler) CreateConversation(w http.ResponseWriter, r *http.
 	// Respond
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(conv)
+	err = json.NewEncoder(w).Encode(conv)
+	if err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *ConversationHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +80,11 @@ func (h *ConversationHandler) GetConversations(w http.ResponseWriter, r *http.Re
 
 	// Respond
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(convs)
+	err = json.NewEncoder(w).Encode(convs)
+	if err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Helper
