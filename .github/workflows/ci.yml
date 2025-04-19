@@ -50,4 +50,4 @@ jobs:
         files: coverage.cleaned.out
         token: ${{ secrets.CODECOV_TOKEN }}
         name: coverage-report
-        exclude: "adapters/mocks/.*"
+        exclude: "adapters/mocks/**"

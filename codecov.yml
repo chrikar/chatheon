@@ -1,0 +1,33 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 90%
+        threshold: 0%
+
+  precision: 2
+  round: down
+  exclude:
+    - "adapters/mocks/**"
+    - "tests/.*"
+
+ignore:
+  - "adapters/mocks/**"
+  - "tests/.*"
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: true
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: true
+      loop: true
+      method: true
+      macro: true
