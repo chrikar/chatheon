@@ -48,10 +48,11 @@ func (s *MessageStatus) UnmarshalJSON(data []byte) error {
 }
 
 type Message struct {
-	ID         uuid.UUID     `json:"id"`
-	SenderID   string        `json:"sender_id"`
-	ReceiverID string        `json:"receiver_id"`
-	Content    string        `json:"content"`
-	CreatedAt  time.Time     `json:"created_at"`
-	Status     MessageStatus `json:"status"`
+	ID             uuid.UUID     `json:"id"`
+	SenderID       string        `json:"sender_id"`
+	ReceiverID     string        `json:"receiver_id"`
+	Content        string        `json:"content"`
+	ConversationID uuid.UUID     `json:"conversation_id"`
+	CreatedAt      time.Time     `json:"created_at"`
+	Status         MessageStatus `json:"status"`
 }

@@ -58,26 +58,26 @@ func TestMessageHandler_GetMessages_InvalidPagination(t *testing.T) {
 }
 
 func TestMessageHandler_GetMessages_Success(t *testing.T) {
-    now := time.Now()
-    expected := []*domain.Message{
-        {ID: uuid.New(), SenderID: "s1", ReceiverID: "user-1", Content: "hi1", CreatedAt: now, Status: domain.StatusDelivered},
-    }
+	now := time.Now()
+	expected := []*domain.Message{
+		{ID: uuid.New(), SenderID: "s1", ReceiverID: "user-1", Content: "hi1", CreatedAt: now, Status: domain.StatusDelivered},
+	}
 
-    service := mocks.NewMockMessageService(t)
-    service.On("GetMessagesByReceiver", "user-1", 10, 0).Return(expected, nil)
+	service := mocks.NewMockMessageService(t)
+	service.On("GetMessagesByReceiver", "user-1", 10, 0).Return(expected, nil)
 
-    handler := NewMessageHandler(service)
-    req := httptest.NewRequest(http.MethodGet, "/messages", nil)
-    req = req.WithContext(contextWithUserID(req.Context(), "user-1"))
-    rr := httptest.NewRecorder()
+	handler := NewMessageHandler(service)
+	req := httptest.NewRequest(http.MethodGet, "/messages", nil)
+	req = req.WithContext(contextWithUserID(req.Context(), "user-1"))
+	rr := httptest.NewRecorder()
 
-    handler.GetMessages(rr, req)
-    assert.Equal(t, http.StatusOK, rr.Code)
+	handler.GetMessages(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
 
-    var got []domain.Message
-    assert.NoError(t, json.NewDecoder(rr.Body).Decode(&got))
-    assert.Len(t, got, 1)
-    assert.Equal(t, expected[0].Status, got[0].Status) // enum field round‑tripped
+	var got []domain.Message
+	assert.NoError(t, json.NewDecoder(rr.Body).Decode(&got))
+	assert.Len(t, got, 1)
+	assert.Equal(t, expected[0].Status, got[0].Status) // enum field round‑tripped
 
-    service.AssertExpectations(t)
+	service.AssertExpectations(t)
 }
