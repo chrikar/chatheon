@@ -11,9 +11,6 @@ coverage:
 
   precision: 2
   round: down
-  exclude:
-    - "adapters/mocks/**"
-    - "tests/.*"
 
 ignore:
   - "adapters/mocks/**"
