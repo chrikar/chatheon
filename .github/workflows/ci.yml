@@ -50,4 +50,5 @@ jobs:
         files: coverage.cleaned.out
         token: ${{ secrets.CODECOV_TOKEN }}
         name: coverage-report
+        codecov_yml_path: ./.codecov.yml
         exclude: "adapters/mocks/**"
