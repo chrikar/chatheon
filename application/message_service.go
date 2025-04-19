@@ -3,7 +3,6 @@ package application
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -39,7 +38,6 @@ func (s *MessageService) CreateMessage(senderID, receiverID, content string) err
 		SenderID:   senderID,
 		ReceiverID: receiverID,
 		Content:    content,
-		CreatedAt:  time.Now(),
 	}
 
 	return s.repo.Create(message)

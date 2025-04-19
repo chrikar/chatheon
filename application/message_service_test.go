@@ -102,16 +102,16 @@ func TestGetMessages(t *testing.T) {
 }
 
 func TestSetMessageStatus(t *testing.T) {
-    repo := newMockMessageRepo() // your in-memory repo
-    svc := NewMessageService(repo)
-    // create a message
-    msg := &domain.Message{ID: uuid.New(), SenderID:"u1",ReceiverID:"u2",Content:"hi"}
-    err := repo.Create(msg)
+	repo := newMockMessageRepo() // your in-memory repo
+	svc := NewMessageService(repo)
+	// create a message
+	msg := &domain.Message{ID: uuid.New(), SenderID: "u1", ReceiverID: "u2", Content: "hi"}
+	err := repo.Create(msg)
 	assert.NoError(t, err)
-    // update
-    err = svc.SetMessageStatus(msg.ID.String(), domain.StatusRead)
-    assert.NoError(t, err)
-    // verify in repo
-    stored, _ := repo.GetMessagesByReceiver("u2",10,0)
-    assert.Equal(t, domain.StatusRead, stored[0].Status)
+	// update
+	err = svc.SetMessageStatus(msg.ID.String(), domain.StatusRead)
+	assert.NoError(t, err)
+	// verify in repo
+	stored, _ := repo.GetMessagesByReceiver("u2", 10, 0)
+	assert.Equal(t, domain.StatusRead, stored[0].Status)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// MessageStatus is an iota‐based enum of possible message states.
+// MessageStatus is an iota enum for message states.
 type MessageStatus int
 
 const (
@@ -17,12 +17,7 @@ const (
 	StatusRead
 )
 
-// statusNames maps enum values to their string representations.
-var statusNames = [...]string{
-	"sent",
-	"delivered",
-	"read",
-}
+var statusNames = []string{"sent", "delivered", "read"}
 
 // String implements fmt.Stringer.
 func (s MessageStatus) String() string {
@@ -32,12 +27,12 @@ func (s MessageStatus) String() string {
 	return statusNames[s]
 }
 
-// MarshalJSON makes MessageStatus serialize as a JSON string.
+// MarshalJSON renders the enum as a JSON string.
 func (s MessageStatus) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.String())
 }
 
-// UnmarshalJSON lets MessageStatus be parsed from its JSON string.
+// UnmarshalJSON parses a JSON string into the enum.
 func (s *MessageStatus) UnmarshalJSON(data []byte) error {
 	var str string
 	if err := json.Unmarshal(data, &str); err != nil {

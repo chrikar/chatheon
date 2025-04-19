@@ -3,6 +3,7 @@ package memory
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -24,6 +25,8 @@ func (r *MessageRepository) Create(message *domain.Message) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	message.CreatedAt = time.Now()
+	message.Status = domain.StatusSent
 	r.messages = append(r.messages, message)
 	return nil
 }

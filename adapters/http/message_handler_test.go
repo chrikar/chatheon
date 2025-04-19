@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/chrikar/chatheon/adapters/mocks"
 	"github.com/chrikar/chatheon/domain"
 	"github.com/chrikar/chatheon/internal/auth"
 )
@@ -57,46 +58,26 @@ func TestMessageHandler_GetMessages_InvalidPagination(t *testing.T) {
 }
 
 func TestMessageHandler_GetMessages_Success(t *testing.T) {
-	now := time.Now()
-	expected := []*domain.Message{
-		{ID: uuid.New(), SenderID: "s1", ReceiverID: "user-1", Content: "hi1", CreatedAt: now, Status: domain.StatusSent},
-		{ID: uuid.New(), SenderID: "s2", ReceiverID: "user-1", Content: "hi2", CreatedAt: now, Status: domain.StatusSent},
-	}
+    now := time.Now()
+    expected := []*domain.Message{
+        {ID: uuid.New(), SenderID: "s1", ReceiverID: "user-1", Content: "hi1", CreatedAt: now, Status: domain.StatusDelivered},
+    }
 
-	service := new(mockMessageService)
-	service.
-		On("GetMessagesByReceiver", "user-1", 10, 0).
-		Return(expected, nil)
+    service := mocks.NewMockMessageService(t)
+    service.On("GetMessagesByReceiver", "user-1", 10, 0).Return(expected, nil)
 
-	handler := NewMessageHandler(service)
+    handler := NewMessageHandler(service)
+    req := httptest.NewRequest(http.MethodGet, "/messages", nil)
+    req = req.WithContext(contextWithUserID(req.Context(), "user-1"))
+    rr := httptest.NewRecorder()
 
-	req := httptest.NewRequest(http.MethodGet, "/messages", nil)
-	req = req.WithContext(contextWithUserID(req.Context(), "user-1"))
-	rr := httptest.NewRecorder()
+    handler.GetMessages(rr, req)
+    assert.Equal(t, http.StatusOK, rr.Code)
 
-	handler.GetMessages(rr, req)
+    var got []domain.Message
+    assert.NoError(t, json.NewDecoder(rr.Body).Decode(&got))
+    assert.Len(t, got, 1)
+    assert.Equal(t, expected[0].Status, got[0].Status) // enum field round‑tripped
 
-	assert.Equal(t, http.StatusOK, rr.Code)
-
-	var actual []struct {
-		ID        string `json:"id"`
-		CreatedAt string `json:"created_at"`
-		Status    string `json:"status"`
-	}
-	err := json.NewDecoder(rr.Body).Decode(&actual)
-	assert.NoError(t, err)
-	assert.Len(t, actual, 2)
-
-	// verify UUID and timestamp format
-	for i, msg := range actual {
-		_, err := uuid.Parse(msg.ID)
-		assert.NoError(t, err)
-
-		_, err = time.Parse(time.RFC3339Nano, msg.CreatedAt)
-		assert.NoError(t, err)
-
-		assert.Equal(t, expected[i].Status.String(), msg.Status)
-	}
-
-	service.AssertExpectations(t)
+    service.AssertExpectations(t)
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
 
@@ -109,31 +108,8 @@ func (h *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to fetch messages", http.StatusInternalServerError)
 		return
 	}
-
-	// build JSON response
-	type messageResponse struct {
-		ID         string `json:"id"`
-		SenderID   string `json:"sender_id"`
-		ReceiverID string `json:"receiver_id"`
-		Content    string `json:"content"`
-		CreatedAt  string `json:"created_at"`
-		Status     string `json:"status"`
-	}
-
-	resp := make([]messageResponse, 0, len(msgs))
-	for _, m := range msgs {
-		resp = append(resp, messageResponse{
-			ID:         m.ID.String(),
-			SenderID:   m.SenderID,
-			ReceiverID: m.ReceiverID,
-			Content:    m.Content,
-			CreatedAt:  m.CreatedAt.Format(time.RFC3339Nano),
-			Status:     m.Status.String(),
-		})
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(resp)
+	err = json.NewEncoder(w).Encode(msgs)
 	if err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return
