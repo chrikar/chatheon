@@ -14,7 +14,7 @@ coverage:
 
 ignore:
   - "adapters/mocks/**"
-  - "tests/.*"
+  - ".*_test\\.go$"        # ignore every Go test file
 
 comment:
   layout: "reach,diff,flags,files"
