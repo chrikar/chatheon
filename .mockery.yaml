@@ -1,0 +1,17 @@
+# .mockery.yaml
+all: true
+recursive: true
+template: testify
+
+# where to write mocks
+dir: adapters/mocks
+pkgname: mocks
+filename: "mock_{{.InterfaceName | lower}}.go"
+structname: "Mock{{.InterfaceName}}"
+
+# pick which interfaces to mock
+packages:
+  github.com/chrikar/chatheon/application/ports:
+    interfaces:
+      UserService: {}
+      MessageService: {}

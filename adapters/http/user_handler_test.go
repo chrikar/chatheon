@@ -14,7 +14,7 @@ import (
 )
 
 func TestUserHandler_RegisterUser(t *testing.T) {
-	service := new(mocks.UserService)
+	service := new(mocks.MockUserService)
 	handler := NewUserHandler(service)
 
 	tests := []struct {
@@ -59,7 +59,7 @@ func TestUserHandler_RegisterUser(t *testing.T) {
 }
 
 func TestUserHandler_LoginUser(t *testing.T) {
-	service := new(mocks.UserService)
+	service := new(mocks.MockUserService)
 	handler := NewUserHandler(service)
 
 	tests := []struct {
@@ -115,7 +115,7 @@ func TestUserHandler_LoginUser(t *testing.T) {
 }
 
 func TestUserHandler_RegisterUser_EmptyFields(t *testing.T) {
-	service := new(mocks.UserService)
+	service := new(mocks.MockUserService)
 	handler := NewUserHandler(service)
 
 	tests := []registerRequest{

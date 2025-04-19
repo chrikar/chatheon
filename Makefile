@@ -2,12 +2,13 @@
 
 GO_CMD=go
 APP_NAME=chatheon
+MOCK_GEN=mockery
 
 build:
 	$(GO_CMD) build -o bin/$(APP_NAME) ./cmd/$(APP_NAME)
 
 mocks:
-	$(GO_CMD) generate ./...
+	$(MOCK_GEN)
 
 run: build
 	./bin/$(APP_NAME)
