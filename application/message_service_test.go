@@ -106,9 +106,10 @@ func TestSetMessageStatus(t *testing.T) {
     svc := NewMessageService(repo)
     // create a message
     msg := &domain.Message{ID: uuid.New(), SenderID:"u1",ReceiverID:"u2",Content:"hi"}
-    repo.Create(msg)
+    err := repo.Create(msg)
+	assert.NoError(t, err)
     // update
-    err := svc.SetMessageStatus(msg.ID.String(), domain.StatusRead)
+    err = svc.SetMessageStatus(msg.ID.String(), domain.StatusRead)
     assert.NoError(t, err)
     // verify in repo
     stored, _ := repo.GetMessagesByReceiver("u2",10,0)
