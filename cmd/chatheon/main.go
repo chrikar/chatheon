@@ -23,9 +23,17 @@ func main() {
 
 	jwtManager := auth.NewJWTManager("your-secret-key", time.Hour)
 
+	// Repositories
 	userRepo := memory.NewUserRepository()
+	convRepo := memory.NewConversationRepository()
+
+	// Services
 	userService := application.NewUserService(userRepo, jwtManager)
+	convService := application.NewConversationService(convRepo)
+
+	// Handlers
 	userHandler := handler.NewUserHandler(userService)
+	convHandler := handler.NewConversationHandler(convService)
 
 	router := mux.NewRouter()
 
@@ -36,6 +44,10 @@ func main() {
 	// Protected routes
 	secured := router.PathPrefix("/").Subrouter()
 	secured.Use(auth.JWTMiddleware(jwtManager))
+
+	// Conversation endpoints
+	secured.HandleFunc("/conversations", convHandler.CreateConversation).Methods(http.MethodPost)
+	secured.HandleFunc("/conversations", convHandler.GetConversations).Methods(http.MethodGet)
 
 	secured.HandleFunc("/messages", messageHandler.CreateMessage).Methods(http.MethodPost)
 	secured.HandleFunc("/messages", messageHandler.GetMessages).Methods(http.MethodGet)

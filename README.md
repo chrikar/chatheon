@@ -154,7 +154,7 @@ Response:
 }
 ```
 
-#### Send a message (use the preiously obtained JWT token)
+#### Send a message (use the previously obtained JWT token)
 ```bash
 curl -X POST http://localhost:8080/messages \
   -H "Content-Type: application/json" \
@@ -189,6 +189,40 @@ Response:
   }
 ]
 ```
+
+#### Create conversation
+```bash
+curl -X POST http://localhost:8080/conversations \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"participant_ids":["alice","bob"]}'
+```
+
+Response:
+```json
+{
+  "id":"5f9d837e-5eae-4f83-b848-0a2940cb12c8",
+  "participant_ids":["alice","bob","8eb478bf-4679-4d1b-9a05-41d863c13cba"],
+  "created_at":"2025-04-19T21:54:16.177088671+03:00"}
+```
+
+#### List conversations
+```bash
+curl -X GET http://localhost:8080/conversations \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Response:
+```json
+[
+  {
+    "id":"5f9d837e-5eae-4f83-b848-0a2940cb12c8",
+    "participant_ids":["alice","bob","8eb478bf-4679-4d1b-9a05-41d863c13cba"],
+    "created_at":"2025-04-19T21:54:16.177088671+03:00"
+  }
+]
+```
+
 
 ## Contributing
 
