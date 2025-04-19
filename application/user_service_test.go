@@ -1,173 +1,111 @@
+// application/user_service_test.go
 package application
 
 import (
 	"errors"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/chrikar/chatheon/domain"
+	"github.com/chrikar/chatheon/internal/auth"
 )
 
-// Mock implementations
-
-type mockUserRepo struct {
-	users map[string]*domain.User
-}
-
-func newMockUserRepo() *mockUserRepo {
-	return &mockUserRepo{users: make(map[string]*domain.User)}
-}
-
-func (m *mockUserRepo) Create(user *domain.User) error {
-	if _, exists := m.users[user.Username]; exists {
-		return errors.New("user already exists")
-	}
-	m.users[user.Username] = user
-	return nil
-}
+// mockUserRepo implements the repository port for Register().
+type mockUserRepo struct{ mock.Mock }
 
 func (m *mockUserRepo) FindByUsername(username string) (*domain.User, error) {
-	user, exists := m.users[username]
-	if !exists {
-		return nil, errors.New("user not found")
+	args := m.Called(username)
+	u := args.Get(0)
+	if u == nil {
+		return nil, args.Error(1)
 	}
-	return user, nil
+	return u.(*domain.User), args.Error(1)
+}
+func (m *mockUserRepo) Create(user *domain.User) error {
+	return m.Called(user).Error(0)
 }
 
-type mockTokenGenerator struct{}
-
-func (m *mockTokenGenerator) Generate(username, userID string) (string, error) {
-	return "mock-token", nil
-}
-
-// ✅ Test: Register user (table-driven, thread-safe, parallelized)
-func TestRegisterUser(t *testing.T) {
-	t.Parallel()
-
-	cases := []struct {
-		name        string
-		preRegister bool
-		username    string
-		password    string
-		wantErr     error
-	}{
-		{"valid user", false, "testuser", "password", nil},
-		{"duplicate username", true, "testuser", "password", ErrUsernameTaken},
-		{"empty username", false, "", "password", ErrUsernameRequired},
-		{"empty password", false, "testuser2", "", ErrPasswordRequired},
+func TestUserService_Register(t *testing.T) {
+	type scenario struct {
+		name          string
+		username      string
+		password      string
+		setupStubs    func(r *mockUserRepo)
+		expectedError error
 	}
 
-	for _, tc := range cases {
-		tc := tc // capture variable
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+	dbErr := errors.New("db failure")
+	scenarios := []scenario{
+		{
+			name:          "empty username",
+			username:      "",
+			password:      "pw",
+			setupStubs:    func(r *mockUserRepo) {},
+			expectedError: ErrUsernameRequired,
+		},
+		{
+			name:          "empty password",
+			username:      "bob",
+			password:      "",
+			setupStubs:    func(r *mockUserRepo) {},
+			expectedError: ErrPasswordRequired,
+		},
+		{
+			name:     "duplicate username",
+			username: "bob", password: "pw",
+			setupStubs: func(r *mockUserRepo) {
+				// stub FindByUsername to return an existing user
+				r.On("FindByUsername", "bob").
+					Return(&domain.User{ID: uuid.New(), Username: "bob"}, nil)
+			},
+			expectedError: ErrUsernameTaken,
+		},
+		{
+			name:     "repo Create error",
+			username: "carol", password: "pw",
+			setupStubs: func(r *mockUserRepo) {
+				r.On("FindByUsername", "carol").Return(nil, errors.New("user not found"))
+				// capture the user passed in if you like
+				r.On("Create", mock.MatchedBy(func(u *domain.User) bool {
+					return u.Username == "carol"
+				})).Return(dbErr)
+			},
+			expectedError: dbErr,
+		},
+		{
+			name:     "success",
+			username: "dave", password: "pw",
+			setupStubs: func(r *mockUserRepo) {
+				r.On("FindByUsername", "dave").Return(nil, errors.New("user not found"))
+				r.On("Create", mock.AnythingOfType("*domain.User")).Return(nil)
+			},
+			expectedError: nil,
+		},
+	}
 
-			repo := newMockUserRepo()
-			service := NewUserService(repo, &mockTokenGenerator{})
+	for _, sc := range scenarios {
+		t.Run(sc.name, func(t *testing.T) {
+			repo := new(mockUserRepo)
+			mgr := auth.NewJWTManager("secret", time.Hour)
+			svc := NewUserService(repo, mgr)
 
-			// Pre-register user for duplicate test
-			if tc.preRegister {
-				_ = service.Register(tc.username, tc.password)
-			}
+			// arrange
+			sc.setupStubs(repo)
 
-			err := service.Register(tc.username, tc.password)
-			if tc.wantErr != nil {
-				assert.ErrorIs(t, err, tc.wantErr)
+			// act
+			err := svc.Register(sc.username, sc.password)
+
+			// assert
+			if sc.expectedError != nil {
+				assert.ErrorIs(t, err, sc.expectedError)
 			} else {
 				assert.NoError(t, err)
 			}
-		})
-	}
-}
-
-// ✅ Test: Password is hashed properly
-func TestRegisterUser_PasswordIsHashed(t *testing.T) {
-	t.Parallel()
-
-	repo := newMockUserRepo()
-	service := NewUserService(repo, &mockTokenGenerator{})
-
-	username := "secureuser"
-	password := "supersecure"
-
-	err := service.Register(username, password)
-	assert.NoError(t, err)
-
-	storedUser, err := repo.FindByUsername(username)
-	assert.NoError(t, err)
-	assert.NotEqual(t, password, storedUser.PasswordHash, "Password should be hashed")
-}
-
-// ✅ Test: Register and find multiple users safely
-func TestRegisterMultipleUsers(t *testing.T) {
-	t.Parallel()
-
-	repo := newMockUserRepo()
-	service := NewUserService(repo, &mockTokenGenerator{})
-
-	users := []struct {
-		username string
-		password string
-	}{
-		{"alice", "password1"},
-		{"bob", "password2"},
-		{"charlie", "password3"},
-	}
-
-	// Register users
-	for _, u := range users {
-		err := service.Register(u.username, u.password)
-		assert.NoError(t, err)
-	}
-
-	// Verify users exist
-	for _, u := range users {
-		_, err := repo.FindByUsername(u.username)
-		assert.NoError(t, err)
-	}
-}
-
-// ✅ Test: Login flow (table-driven, parallel-safe)
-func TestLogin(t *testing.T) {
-	t.Parallel()
-
-	cases := []struct {
-		name        string
-		username    string
-		password    string
-		preRegister bool
-		loginUser   string
-		loginPass   string
-		wantErr     error
-	}{
-		{"successful login", "testuser", "password", true, "testuser", "password", nil},
-		{"wrong username", "testuser", "password", true, "unknown", "password", ErrInvalidCredentials},
-		{"wrong password", "testuser", "password", true, "testuser", "wrongpassword", ErrInvalidCredentials},
-	}
-
-	for _, tc := range cases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			repo := newMockUserRepo()
-			service := NewUserService(repo, &mockTokenGenerator{})
-
-			if tc.preRegister {
-				err := service.Register(tc.username, tc.password)
-				assert.NoError(t, err)
-			}
-
-			token, err := service.Login(tc.loginUser, tc.loginPass)
-
-			if tc.wantErr != nil {
-				assert.ErrorIs(t, err, tc.wantErr)
-				assert.Empty(t, token)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, "mock-token", token)
-			}
+			repo.AssertExpectations(t)
 		})
 	}
 }

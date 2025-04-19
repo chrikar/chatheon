@@ -8,18 +8,28 @@ import (
 )
 
 func TestJWTManager_GenerateAndVerify(t *testing.T) {
-	t.Parallel()
+	// 1h expiry for easy testing
+	mgr := NewJWTManager("test-secret", time.Second)
 
-	manager := NewJWTManager("test-secret", time.Minute)
+	// Generate a token for user “alice”
+	token, err := mgr.Generate("alice", "user-123")
+	assert.NoError(t, err, "Generate should not error")
 
-	token, err := manager.Generate("testuser", "user-123")
-	assert.NoError(t, err)
-	assert.NotEmpty(t, token)
+	// Immediately verify: should be valid
+	claims, err := mgr.Verify(token)
+	assert.NoError(t, err, "Verify should accept fresh token")
+	assert.Equal(t, "alice", claims.Username, "Claims.Username should match")
+	assert.Equal(t, "user-123", claims.UserID, "Claims.UserID should match")
+	assert.NotEmpty(t, claims.ExpiresAt, "Claims.ExpiresAt should not be empty")
 
-	claims, err := manager.Verify(token)
-	assert.NoError(t, err)
-	assert.Equal(t, "testuser", claims.Username)
-	assert.Equal(t, "user-123", claims.UserID)
+	// Tamper: invalid token should error
+	_, err = mgr.Verify(token + "garbage")
+	assert.Error(t, err, "Verify should reject malformed token")
+
+	// Expiry: wait past 1s TTL
+	time.Sleep(1100 * time.Millisecond)
+	_, err = mgr.Verify(token)
+	assert.Error(t, err, "Verify should reject expired token")
 }
 
 func TestJWTManager_Verify_InvalidCases(t *testing.T) {
