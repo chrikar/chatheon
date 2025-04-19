@@ -12,7 +12,7 @@ coverage:
   precision: 2
   round: down
   exclude:
-    - "adapters/mocks/.*"
+    - "adapters/mocks"
     - "tests/.*"
 
 comment:
