@@ -15,6 +15,10 @@ coverage:
     - "adapters/mocks"
     - "tests/.*"
 
+ignore:
+  - "adapters/mocks"
+  - "tests/.*"
+
 comment:
   layout: "reach,diff,flags,files"
   behavior: default
