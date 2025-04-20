@@ -3,7 +3,7 @@
 [![Go](https://github.com/chrikar/chatheon/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/chatheon/actions)
 [![codecov](https://codecov.io/gh/chrikar/chatheon/graph/badge.svg?token=3D0K04DH8Q)](https://codecov.io/gh/chrikar/chatheon)
 
-A modern, Go-powered chat application built with Hexagonal architecture and full test coverage.
+A modern, Go-powered chat application built with Hexagonal architecture.
 
 ## Table of Contents
 - [Chatheon](#chatheon)
