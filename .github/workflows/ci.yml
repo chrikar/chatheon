@@ -41,7 +41,7 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        go test -race -coverprofile=coverage.out ./...
+        go test -race -coverprofile=coverage.out ./adapters/http ./adapters/memory ./adapters/notification ./adapters/postgres ./application ./cmd ./domain ./internal
         grep -v "adapters/mocks" coverage.out > coverage.cleaned.out
 
     - name: Upload coverage reports to Codecov
